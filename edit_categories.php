@@ -2,49 +2,42 @@
 session_start();
 include 'koneksi.php';
 
-// Cek sesi login
+// Proteksi Keamanan: Cek sesi login
 if(!isset($_SESSION['user'])){
     header("Location: login.php");
     exit;
 }
 
-// Cek apakah ada ID di URL
+// Cek apakah ada ID kategori yang dikirim melalui URL
 if(!isset($_GET['id'])){
-    header("Location: habits.php");
+    header("Location: categories.php");
     exit;
 }
 
 $id = $_GET['id'];
-$user_id = $_SESSION['user'];
 
-// Ambil data Habit yang mau diedit dari database (Aman dari SQL Injection)
-$stmt = $conn->prepare("SELECT * FROM habits WHERE id = ? AND user_id = ?");
-$stmt->bind_param("ii", $id, $user_id);
+// Ambil data kategori yang akan diedit dari database
+$stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
+$stmt->bind_param("i", $id);
 $stmt->execute();
 $data = $stmt->get_result()->fetch_assoc();
 
-// Jika data tidak ditemukan / bukan milik user ini, kembalikan ke list
+// Jika kategori tidak ditemukan, kembali ke daftar
 if(!$data){
-    header("Location: habits.php");
+    header("Location: categories.php");
     exit;
 }
 
-// Ambil semua kategori untuk Dropdown
-$kategori_query = $conn->query("SELECT * FROM categories ORDER BY name ASC");
-
 // Proses jika tombol update ditekan
 if(isset($_POST['submit'])){
-    $habit_name = $_POST['habit_name'];
-    $category_id = empty($_POST['category_id']) ? NULL : $_POST['category_id'];
-    $description = $_POST['description'];
-    $date = $_POST['date'];
+    $name = $_POST['name'];
 
-    // Update data ke database dengan Prepared Statement
-    $update = $conn->prepare("UPDATE habits SET category_id = ?, habit_name = ?, description = ?, date = ? WHERE id = ? AND user_id = ?");
-    $update->bind_param("isssii", $category_id, $habit_name, $description, $date, $id, $user_id);
+    // Update data ke database (Aman dari SQL Injection)
+    $update = $conn->prepare("UPDATE categories SET name = ? WHERE id = ?");
+    $update->bind_param("si", $name, $id);
     
     if($update->execute()){
-        header("Location: habits.php");
+        header("Location: categories.php");
         exit;
     }
 }
@@ -55,7 +48,7 @@ if(isset($_POST['submit'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Habit | Premium Web3 Style</title>
+    <title>Edit Category | Premium Web3 Style</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -75,7 +68,7 @@ if(isset($_POST['submit'])){
             position: relative;
         }
 
-        /* ===== ANIMATED GLOWING ORBS (Nuansa Gold/Orange untuk Edit) ===== */
+        /* ===== ANIMATED GLOWING ORBS (Purple & Pink) ===== */
         .orb-1, .orb-2 {
             position: absolute;
             border-radius: 50%;
@@ -85,12 +78,12 @@ if(isset($_POST['submit'])){
         }
         .orb-1 {
             width: 300px; height: 300px;
-            background: rgba(250, 204, 21, 0.25); /* Gold Glow */
+            background: rgba(167, 139, 250, 0.25); /* Purple Glow */
             top: 15%; left: 10%;
         }
         .orb-2 {
             width: 400px; height: 400px;
-            background: rgba(249, 115, 22, 0.25); /* Orange Glow */
+            background: rgba(236, 72, 153, 0.2); /* Pink Glow */
             bottom: 5%; right: 10%;
             animation-delay: -4s;
         }
@@ -101,13 +94,13 @@ if(isset($_POST['submit'])){
 
         /* ===== GLASSMORPHISM CARD ===== */
         .crypto-card { 
-            background: rgba(15, 23, 42, 0.4); 
+            background: rgba(15, 23, 42, 0.5); 
             backdrop-filter: blur(20px); 
             border-radius: 24px; 
             border: 1px solid rgba(255, 255, 255, 0.1); 
             padding: 40px; 
             width: 100%; 
-            max-width: 550px; 
+            max-width: 500px; 
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); 
             animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); 
             position: relative;
@@ -120,7 +113,7 @@ if(isset($_POST['submit'])){
 
         /* ===== TYPOGRAPHY ===== */
         .glow-title { 
-            background: linear-gradient(to right, #facc15, #f97316);
+            background: linear-gradient(to right, #a78bfa, #f472b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center; 
@@ -130,7 +123,7 @@ if(isset($_POST['submit'])){
             letter-spacing: 1px;
         }
 
-        /* ===== INPUT FIELDS (NEON FOCUS GOLD) ===== */
+        /* ===== INPUT FIELDS (NEON FOCUS PINK/PURPLE) ===== */
         .form-label {
             color: #94a3b8;
             font-size: 14px;
@@ -138,7 +131,7 @@ if(isset($_POST['submit'])){
             margin-bottom: 8px;
             letter-spacing: 0.5px;
         }
-        input, textarea, select { 
+        input { 
             background: rgba(30, 41, 59, 0.5) !important; 
             color: #e2e8f0 !important; 
             border: 1px solid rgba(255, 255, 255, 0.1) !important; 
@@ -147,13 +140,12 @@ if(isset($_POST['submit'])){
             font-size: 15px !important;
             transition: all 0.3s ease !important;
         }
-        input:focus, textarea:focus, select:focus { 
+        input:focus { 
             background: rgba(30, 41, 59, 0.8) !important;
-            box-shadow: 0 0 20px rgba(250, 204, 21, 0.2) !important; 
-            border-color: #facc15 !important; 
+            box-shadow: 0 0 20px rgba(244, 114, 182, 0.2) !important; 
+            border-color: #f472b6 !important; 
             outline: none !important;
         }
-        option { background-color: #0f172a; color: #fff; }
 
         /* ===== BUTTONS ===== */
         .btn-neon { 
@@ -172,14 +164,13 @@ if(isset($_POST['submit'])){
             z-index: 1;
         }
         .btn-gradient { 
-            background: linear-gradient(135deg, #f59e0b, #ea580c); 
-            box-shadow: 0 10px 20px -10px rgba(234, 88, 12, 0.8);
-            color: #020617 !important; /* Teks agak gelap biar kontras dengan kuning */
+            background: linear-gradient(135deg, #a78bfa, #f472b6); 
+            box-shadow: 0 10px 20px -10px rgba(244, 114, 182, 0.8);
         }
         .btn-gradient:hover { 
             transform: translateY(-3px) scale(1.02); 
-            box-shadow: 0 15px 25px -10px rgba(234, 88, 12, 1); 
-            color: #000 !important;
+            box-shadow: 0 15px 25px -10px rgba(244, 114, 182, 1); 
+            color: white;
         }
         
         .btn-outline-red { 
@@ -204,38 +195,16 @@ if(isset($_POST['submit'])){
     <div class="orb-2"></div>
 
     <div class="crypto-card">
-        <h3 class="glow-title">✏️ Edit Habit</h3>
+        <h3 class="glow-title">✏️ Update Matrix Category</h3>
         
         <form method="POST">
-            <div class="mb-4">
-                <label class="form-label">NAMA HABIT</label>
-                <input type="text" name="habit_name" class="form-control" value="<?= htmlspecialchars($data['habit_name']) ?>" required autocomplete="off">
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">PILIH KATEGORI</label>
-                <select name="category_id" class="form-control" style="cursor: pointer;">
-                    <option value="">-- Tanpa Kategori --</option>
-                    <?php while($kat = $kategori_query->fetch_assoc()): ?>
-                        <option value="<?= $kat['id'] ?>" <?= ($data['category_id'] == $kat['id']) ? 'selected' : '' ?>>
-                            <?= $kat['name'] ?>
-                        </option>
-                    <?php endwhile; ?>
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">DESKRIPSI (OPSIONAL)</label>
-                <textarea name="description" class="form-control" rows="3"><?= htmlspecialchars($data['description']) ?></textarea>
-            </div>
-
             <div class="mb-5">
-                <label class="form-label">TANGGAL MULAI</label>
-                <input type="date" name="date" class="form-control" value="<?= $data['date'] ?>" required style="cursor: pointer;">
+                <label class="form-label">NAMA KATEGORI</label>
+                <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($data['name']) ?>" required autocomplete="off">
             </div>
 
-            <button type="submit" name="submit" class="btn-neon btn-gradient">UPDATE HABIT 🔥</button>
-            <a href="habits.php" class="btn-neon btn-outline-red mt-3">BATAL & KEMBALI</a>
+            <button type="submit" name="submit" class="btn-neon btn-gradient">UPDATE CATEGORY 🔥</button>
+            <a href="categories.php" class="btn-neon btn-outline-red mt-3">BATAL & KEMBALI</a>
         </form>
     </div>
 

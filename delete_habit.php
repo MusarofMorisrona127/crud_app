@@ -1,47 +1,32 @@
 <?php
 // ============================
-// SESSION & KONEKSI DATABASE
+// SESSION & KONEKSI
 // ============================
-session_start(); // mulai session
-include 'koneksi.php'; // koneksi database
+session_start();
+include 'koneksi.php';
 
-// ============================
-// CEK LOGIN
-// ============================
+// Jika belum login, lempar ke halaman login
 if(!isset($_SESSION['user'])){
-    // jika belum login, lempar ke login
     header("Location: login.php");
     exit;
 }
 
 // ============================
-// AMBIL ID DARI URL
+// PROSES HAPUS (AMAN)
 // ============================
-// contoh URL: delete_habit.php?id=3
-if(!isset($_GET['id'])){
-    // jika tidak ada id, kembali
-    header("Location: habits.php");
-    exit;
+// Mengecek apakah ada 'id' yang dikirim melalui URL
+if(isset($_GET['id'])){
+    $id = $_GET['id'];
+    $user_id = $_SESSION['user'];
+
+    // PREPARED STATEMENT: Mencegah SQL Injection
+    // Kita juga memastikan (user_id = ?) agar user A tidak bisa menghapus habit user B
+    $stmt = $conn->prepare("DELETE FROM habits WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $id, $user_id);
+    $stmt->execute();
 }
 
-$id = $_GET['id']; // id habit yang mau dihapus
-$user_id = $_SESSION['user']; // id user login
-
-// ============================
-// HAPUS DATA (AMAN)
-// ============================
-// hanya hapus jika data milik user tersebut
-$stmt = $conn->prepare("DELETE FROM habits WHERE id=? AND user_id=?");
-
-// i = integer
-$stmt->bind_param("ii", $id, $user_id);
-
-// jalankan query
-$stmt->execute();
-
-// ============================
-// REDIRECT KEMBALI
-// ============================
+// Setelah berhasil dihapus, langsung kembalikan ke halaman habits.php
 header("Location: habits.php");
 exit;
 ?>

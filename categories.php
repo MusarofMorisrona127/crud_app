@@ -8,20 +8,14 @@ if(!isset($_SESSION['user'])){
     exit;
 }
 
-$user_id = $_SESSION['user'];
+// Query untuk mengambil kategori beserta jumlah habit di dalamnya
+$query = "SELECT categories.id, categories.name, COUNT(habits.id) as total_habits 
+          FROM categories 
+          LEFT JOIN habits ON categories.id = habits.category_id 
+          GROUP BY categories.id
+          ORDER BY categories.id DESC";
 
-// Query canggih: Menggabungkan tabel habits dan categories (LEFT JOIN)
-// Supaya kita bisa nampilin nama kategorinya, bukan cuma ID-nya.
-$query = "SELECT habits.*, categories.name as category_name 
-          FROM habits 
-          LEFT JOIN categories ON habits.category_id = categories.id 
-          WHERE habits.user_id = ? 
-          ORDER BY habits.date DESC";
-
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+$result = $conn->query($query);
 ?>
 
 <!DOCTYPE html>
@@ -29,7 +23,7 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Habits | Premium Crypto Style</title>
+    <title>Kategori | Premium Crypto Style</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -56,8 +50,8 @@ $result = $stmt->get_result();
             z-index: -1;
             animation: float 15s infinite alternate ease-in-out;
         }
-        .orb-blue { width: 400px; height: 400px; background: rgba(14, 165, 233, 0.15); top: -10%; left: -5%; }
-        .orb-purple { width: 500px; height: 500px; background: rgba(139, 92, 246, 0.15); bottom: -10%; right: -5%; }
+        .orb-purple { width: 450px; height: 450px; background: rgba(167, 139, 250, 0.15); top: -10%; left: -5%; }
+        .orb-pink { width: 400px; height: 400px; background: rgba(244, 114, 182, 0.15); bottom: -10%; right: -5%; }
         @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 60px); } }
 
         /* ===== HEADER SECTION ===== */
@@ -73,7 +67,7 @@ $result = $stmt->get_result();
         .glow-title {
             font-size: 3rem;
             font-weight: 800;
-            background: linear-gradient(to right, #38bdf8, #a78bfa, #f472b6);
+            background: linear-gradient(to right, #a78bfa, #f472b6, #fb923c);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
@@ -91,9 +85,9 @@ $result = $stmt->get_result();
             gap: 10px;
             text-decoration: none;
         }
-        .btn-add { background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.5); }
+        .btn-add { background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; box-shadow: 0 10px 20px -5px rgba(217, 70, 239, 0.5); }
         .btn-back { background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-crypto:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.6); color: white; }
+        .btn-crypto:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(217, 70, 239, 0.6); color: white; }
 
         /* ===== GLASS TABLE CARD ===== */
         .table-container {
@@ -122,22 +116,22 @@ $result = $stmt->get_result();
         }
         .table tbody td { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 20px; }
         
-        /* Baris tabel hover effect */
         .table tbody tr { transition: all 0.3s ease; }
         .table tbody tr:hover { background: rgba(255,255,255,0.02); }
 
-        /* ===== BADGES & DECORATION ===== */
-        .badge-category {
-            background: rgba(56, 189, 248, 0.1);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
+        /* ===== CUSTOM ELEMENTS ===== */
+        .category-name { font-weight: 600; font-size: 18px; color: #f8fafc; }
+        
+        .badge-count {
+            background: rgba(167, 139, 250, 0.15);
+            color: #c4b5fd;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
         }
-        .habit-name { font-weight: 600; font-size: 16px; color: #f1f5f9; display: block; }
-        .habit-desc { font-size: 13px; color: #64748b; }
 
         /* Action Icons */
         .action-link {
@@ -158,20 +152,20 @@ $result = $stmt->get_result();
 </head>
 <body>
 
-    <div class="orb orb-blue"></div>
     <div class="orb orb-purple"></div>
+    <div class="orb orb-pink"></div>
 
     <div class="container">
         <header class="page-header">
-            <h1 class="glow-title">Habit Ecosystem</h1>
-            <p class="text-secondary">Kelola aktivitas harianmu dengan sistem terdesentralisasi (canda dengerin dosen aja).</p>
+            <h1 class="glow-title">Category Matrix</h1>
+            <p class="text-secondary">Kelompokkan rutinitasmu agar lebih terstruktur dan mudah dianalisis.</p>
             
             <div class="mt-4 d-flex justify-content-center gap-3">
                 <a href="dashboard.php" class="btn-crypto btn-back">
                     <i class="fa-solid fa-arrow-left"></i> Dashboard
                 </a>
-                <a href="add_habit.php" class="btn-crypto btn-add">
-                    <i class="fa-solid fa-plus"></i> Add New Habit
+                <a href="add_categories.php" class="btn-crypto btn-add">
+                    <i class="fa-solid fa-folder-plus"></i> New Category
                 </a>
             </div>
         </header>
@@ -181,37 +175,35 @@ $result = $stmt->get_result();
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Activity</th>
-                            <th>Category</th>
-                            <th>Date</th>
-                            <th class="text-center">Security Action</th>
+                            <th>ID Matrix</th>
+                            <th>Category Name</th>
+                            <th>Usage Stats</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if($result->num_rows > 0): ?>
-                            <?php while($row = $result->fetch_assoc()): ?>
+                            <?php 
+                            $no = 1;
+                            while($row = $result->fetch_assoc()): 
+                            ?>
                                 <tr>
+                                    <td style="color:#64748b; font-weight: 600;">#00<?= $no++ ?></td>
                                     <td>
-                                        <span class="habit-name"><?= htmlspecialchars($row['habit_name']) ?></span>
-                                        <span class="habit-desc"><?= htmlspecialchars($row['description']) ?></span>
+                                        <i class="fa-solid fa-layer-group me-2" style="color: #a78bfa;"></i>
+                                        <span class="category-name"><?= htmlspecialchars($row['name']) ?></span>
                                     </td>
                                     <td>
-                                        <span class="badge-category">
-                                            <i class="fa-solid fa-tag me-1" style="font-size: 10px;"></i>
-                                            <?= $row['category_name'] ? htmlspecialchars($row['category_name']) : 'Uncategorized' ?>
+                                        <span class="badge-count">
+                                            <i class="fa-solid fa-chart-pie me-1"></i>
+                                            <?= $row['total_habits'] ?> Habits Linked
                                         </span>
                                     </td>
-                                    <td>
-                                        <div style="font-size: 14px; color: #94a3b8;">
-                                            <i class="fa-regular fa-calendar-check me-2"></i>
-                                            <?= date('d M Y', strtotime($row['date'])) ?>
-                                        </div>
-                                    </td>
                                     <td class="text-center">
-                                        <a href="edit_habit.php?id=<?= $row['id'] ?>" class="action-link btn-edit" title="Edit Data">
+                                        <a href="edit_category.php?id=<?= $row['id'] ?>" class="action-link btn-edit" title="Edit Category">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <button onclick="confirmDelete(<?= $row['id'] ?>)" class="action-link btn-del" style="border:none;" title="Delete Data">
+                                        <button onclick="confirmDelete(<?= $row['id'] ?>)" class="action-link btn-del" style="border:none;" title="Delete Category">
                                             <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </td>
@@ -220,8 +212,8 @@ $result = $stmt->get_result();
                         <?php else: ?>
                             <tr>
                                 <td colspan="4" class="text-center py-5 text-secondary">
-                                    <i class="fa-solid fa-box-open d-block mb-3" style="font-size: 40px; opacity: 0.5;"></i>
-                                    No habits found in your ecosystem. Start by adding one!
+                                    <i class="fa-solid fa-folder-open d-block mb-3" style="font-size: 40px; opacity: 0.5;"></i>
+                                    No categories found in the matrix. Create one now!
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -234,19 +226,19 @@ $result = $stmt->get_result();
     <script>
         function confirmDelete(id) {
             Swal.fire({
-                title: 'Terminate Habit?',
-                text: "Data ini akan dihapus permanen dari ecosystem kamu!",
+                title: 'Hapus Kategori?',
+                text: "Habit yang menggunakan kategori ini akan berubah menjadi 'Uncategorized' (Aman, tidak ikut terhapus).",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#334155',
-                confirmButtonText: 'Yes, Delete!',
-                cancelButtonText: 'Cancel',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
                 background: '#0f172a',
                 color: '#f8fafc'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = 'delete_habit.php?id=' + id;
+                    window.location.href = 'delete_category.php?id=' + id;
                 }
             })
         }
