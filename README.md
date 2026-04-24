@@ -1,9 +1,9 @@
 #  Daily Habit Tracker
 
 ##  Identitas Mahasiswa
-- Nama  : (ISI NAMA KAMU)
-- NIM   : (ISI NIM KAMU)
-- Kelas : (ISI KELAS KAMU)
+- Nama  : (MUSAROF MORISRONA)
+- NIM   : (220103024)
+- Kelas : (TI A1 22)
 
 ---
 
@@ -84,3 +84,5 @@ Digunakan untuk menyimpan data kebiasaan.
 1. Jalankan **Laragon**
 2. Import file `database.sql` ke phpMyAdmin
 3. Pastikan folder project ada di:
+
+Import file `crud_app.sql` ke phpMyAdmin
