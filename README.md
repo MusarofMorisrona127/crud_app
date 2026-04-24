@@ -1,9 +1,9 @@
 #  Daily Habit Tracker
 
 ##  Identitas Mahasiswa
-- Nama  : (ISI NAMA KAMU)
-- NIM   : (ISI NIM KAMU)
-- Kelas : (ISI KELAS KAMU)
+- Nama  : (MUSAROF MORISRONA)
+- NIM   : (220103024)
+- Kelas : (TI A1 22)
 
 ---
 
