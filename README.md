@@ -78,9 +78,3 @@ Digunakan untuk menyimpan data kebiasaan.
 - CSS Custom
 
 ---
-
-## Cara Menjalankan Aplikasi
-
-1. Jalankan **Laragon**
-2. Import file `database.sql` ke phpMyAdmin
-3. Pastikan folder project ada di:
